@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Overhead Panel Switches</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1412; color: #e2e8f0;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .back-link {
+            align-self: flex-start; color: #f59e0b;
+            text-decoration: none; font-weight: bold; margin-bottom: 20px;
+        }
+        .back-link:hover { text-decoration: underline; }
+        
+        h1 { color: #ffffff; margin-bottom: 5px; text-align: center; }
+        .subtitle { color: #bcaaa4; margin-bottom: 20px; text-align: center; }
+
+        .btn-trigger {
+            background: #3e2723; color: #f59e0b;
+            border: 1px solid #f59e0b; padding: 10px 18px;
+            border-radius: 6px; cursor: pointer; font-weight: bold;
+            margin-bottom: 25px; transition: all 0.2s ease;
+        }
+        .btn-trigger:hover {
+            background: #f59e0b; color: #1a1412;
+        }
+
+        /* Main cockpit image box container */
+        .image-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            width: 700px;
+            border: 4px solid #3e2723;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.9);
+            overflow: hidden;
+            margin-bottom: 35px;
+        }
+        .image-container img { width: 100%; height: auto; display: block; }
+
+        /* Square box overlays matching overhead zones */
+        .switch-zone {
+            position: absolute;
+            background: rgba(245, 158, 11, 0.03);
+            border: 2px solid rgba(245, 158, 11, 0.45);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+        .switch-zone:hover {
+            background: rgba(245, 158, 11, 0.22);
+            border-color: #f59e0b;
+            box-shadow: 0 0 14px #f59e0b;
+        }
+
+        /* Column 1 Coordinate Positions */
+        #zone-adiru         { top: 59%; left: 4%; width: 22.5%; height: 8.5%; }
+        #zone-electrical    { top: 67.5%; left: 4%; width: 22.5%; height: 16.5%; }
+        #zone-wipers-lights { top: 85%; left: 4%; width: 22.5%; height: 8%; }
+
+        /* Column 2 Coordinate Positions */
+        #zone-emer-lights   { top: 55.5%; left: 27.5%; width: 20%; height: 12.25%; }
+        #zone-hyd-ram-air   { top: 68%; left: 27.5%; width: 21%; height: 15%; }
+        #zone-pass-signs    { top: 90%; left: 37%; width: 5%; height: 3%; }
+
+        /* Column 3 Coordinate Positions */
+        #zone-engine-mcp    { top: 50.5%; left: 49%; width: 22%; height: 17.5%; }
+        #zone-fuel-jettison { top: 68.25%; left: 49%; width: 22%; height: 15.75%; }
+        #zone-anti-ice      { top: 90%; left: 49.5%; width: 14%; height: 3%; }
+
+        /* Column 4 Coordinate Positions */
+        #zone-air-cond      { top: 54.5%; left: 72%; width: 22.5%; height: 13%; }
+        #zone-bleed-press   { top: 68.5%; left: 71%; width: 22.5%; height: 16%; }
+        #zone-lighting-r    { top: 85%; left: 71%; width: 22.5%; height: 8%; }
+
+        /* Parts Section Header */
+        .parts-section {
+            width: 100%;
+            max-width: 1200px;
+            margin-top: 20px;
+        }
+        .parts-section h2 {
+            color: #ffffff;
+            font-size: 1.5em;
+            margin-bottom: 15px;
+        }
+
+        /* Search input box styling */
+        .search-box {
+            width: 100%;
+            padding: 12px 16px;
+            background: #2b1f1c;
+            border: 1px solid #4e342e;
+            border-radius: 6px;
+            color: #ffffff;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+        .search-box:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);
+        }
+
+        /* Master Index Table Layout Design */
+        .table-container {
+            width: 100%;
+            background: #2b1f1c;
+            border: 1px solid #4e342e;
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            margin-bottom: 50px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85em;
+        }
+        th, td {
+            padding: 10px 14px;
+            border-bottom: 1px solid #4e342e;
+        }
+        th {
+            background: #3e2723;
+            color: #f59e0b;
+            text-transform: uppercase;
+            font-size: 0.75em;
+            letter-spacing: 0.05em;
+        }
+        tr:hover td { background: #352723; }
+        td.part-no { font-family: monospace; color: #f59e0b; }
+        td.qty-cell { text-align: center; font-weight: bold; color: #e2e8f0; }
+        .section-row {
+            background: #231816;
+            font-weight: bold;
+            color: #bcaaa4;
+            font-size: 0.85em;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        .old-ref {
+            font-size: 0.75em;
+            color: #a1887f;
+            font-family: monospace;
+            display: block;
+        }
+        .swap-info {
+            color: #f1f5f9;
+            font-size: 0.9em;
+        }
+
+        /* Overlay Background */
+        .overlay-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85);
+            z-index: 99;
+        }
+        
+        /* Data Popup Boxes */
+        .popup-box {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #231816;
+            border: 2px solid #f59e0b;
+            padding: 22px 25px;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9);
+            z-index: 100;
+            width: 95%; max-width: 720px;
+        }
+        .popup-box h3 { margin: 0 0 15px 0; color: #ffffff; font-size: 1.3em; border-bottom: 1px solid #4e342e; padding-bottom: 8px;}
+
+        /* Photo Viewer Lightbox for PBGuide.jpg */
+        .photo-viewer-box {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #1a1412;
+            border: 3px solid #f59e0b;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.95);
+            z-index: 100;
+            max-width: 90vw;
+            max-height: 90vh;
+            text-align: center;
+        }
+        .photo-viewer-box img {
+            max-width: 100%;
+            max-height: 78vh;
+            display: block;
+            margin: 0 auto 15px auto;
+            border-radius: 4px;
+        }
+        .photo-close-btn {
+            background: #f59e0b;
+            color: #1a1412;
+            border: none;
+            padding: 10px 24px;
+            font-size: 1em;
+            font-weight: bold;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s ease;
+        }
+        .photo-close-btn:hover { background: #d97706; }
+        
+        /* Mini Data Tables Inside Popups */
+        .popup-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.85em;
+            margin-top: 10px;
+        }
+        .popup-table th { background: #34221f; color: #f59e0b; padding: 8px 10px; }
+        .popup-table td { padding: 8px 10px; border-bottom: 1px solid #3a2824; background: #2b1f1c; }
+        
+        .close-btn {
+            position: absolute; top: 12px; right: 12px;
+            background: #4e342e; color: white; border: none;
+            padding: 4px 9px; cursor: pointer; border-radius: 4px; font-size: 0.85em;
+        }
+        .close-btn:hover { background: #d97706; color: #1a1412; }
+    </style>
+</head>
+<body>
+
+    <a href="overhead.html" class="back-link">← Back to Overhead Panel</a>
+    
+    <h1>Overhead Panel Switches</h1>
+    <p class="subtitle">Highlighting physical cockpit switches and alternative swap locations.</p>
+
+    <!-- Button triggers the PBGuide.jpg photo viewer modal -->
+    <button class="btn-trigger" onclick="showPhoto('PBGuide.jpg')">Open Switches Guide</button>
+
+    <div class="image-container">
+        <img src="overhead.jpeg" alt="Overhead Panel Workspace View">
+        
+        <!-- Interactive Hot-Zones -->
+        <div class="switch-zone" id="zone-adiru" onclick="showPopup('adiru')" title="PFC / ADIRU Panel"></div>
+        <div class="switch-zone" id="zone-electrical" onclick="showPopup('electrical')" title="Electrical Power Control"></div>
+        <div class="switch-zone" id="zone-wipers-lights" onclick="showPopup('wipers-lights')" title="Left Wipers & Lights"></div>
+        
+        <div class="switch-zone" id="zone-emer-lights" onclick="showPopup('emer-lights')" title="Emergency Lights & Window Heat"></div>
+        <div class="switch-zone" id="zone-hyd-ram-air" onclick="showPopup('hyd-ram-air')" title="Hydraulics & RAM Air"></div>
+        <div class="switch-zone" id="zone-pass-signs" onclick="showPopup('pass-signs')" title="Passenger Signs Panel"></div>
+        
+        <div class="switch-zone" id="zone-engine-mcp" onclick="showPopup('engine-mcp')" title="Cargo Fire & Engine Controls"></div>
+        <div class="switch-zone" id="zone-fuel-jettison" onclick="showPopup('fuel-jettison')" title="Fuel System & Jettison"></div>
+        <div class="switch-zone" id="zone-anti-ice" onclick="showPopup('anti-ice')" title="Anti-Ice & Aircraft Lights"></div>
+        
+        <div class="switch-zone" id="zone-air-cond" onclick="showPopup('air-cond')" title="Air Conditioning Panel"></div>
+        <div class="switch-zone" id="zone-bleed-press" onclick="showPopup('bleed-press')" title="Bleed Air & Pressurization"></div>
+        <div class="switch-zone" id="zone-lighting-r" onclick="showPopup('lighting-r')" title="Right Wipers & Brightness"></div>
+    </div>
+
+    <!-- MAIN MASTER INDEX TABLE -->
+    <div class="parts-section">
+        <h2>Master Parts Index</h2>
+        <input class="search-box" type="text" id="searchSwitches" onkeyup="filterTable()" placeholder="Filter master index by description fields, system labels, part numbers...">
+        
+        <div class="table-container">
+            <table id="SwitchesTable">
+                <thead>
+                    <tr>
+                        <th>Panel/Switch</th>
+                        <th>Boeing Top Level</th>
+                        <th>Korry Top Level</th>
+                        <th>Cap/Switch Module</th>
+                        <th style="text-align:center;">Qty</th>
+                        <th>Swappable / Alternatives</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- PFC/ADIRU -->
+                    <tr class="section-row"><td colspan="6">PFC / ADIRU</td></tr>
+                    <tr>
+                        <td>ADIRU - On/Off</td>
+                        <td class="part-no">S231W240-230</td>
+                        <td class="part-no">32500-230</td>
+                        <td class="part-no">32500-730</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated slot (No immediate alternate swap)</td>
+                    </tr>
+                    <tr>
+                        <td>Thrust Assym. Computer - Auto/Off</td>
+                        <td class="part-no">S231W240-212</td>
+                        <td class="part-no">32500-212</td>
+                        <td class="part-no">32500-712</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Alternative at Air Conditioning Panel (Packs L&R) or APU Bleed Panel</td>
+                    </tr>
+
+                    <!-- Electrical -->
+                    <tr class="section-row"><td colspan="6">Electrical</td></tr>
+                    <tr>
+                        <td>On/Off</td>
+                        <td class="part-no">S231W240-201</td>
+                        <td class="part-no">32500-201</td>
+                        <td class="part-no">32500-701</td>
+                        <td class="qty-cell">8</td>
+                        <td class="swap-info">Alternative at Anti-Ice Panel (2) & Autostart Panel (1)</td>
+                    </tr>
+                    <tr>
+                        <td>On/Available (Ground Power)</td>
+                        <td class="part-no">S231W240-205</td>
+                        <td class="part-no">32500-205</td>
+                        <td class="part-no">32500-705</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Electrical Panel (Primary <-> Secondary Ground Power switch slot)</td>
+                    </tr>
+                    <tr>
+                        <td>Auto/Isln</td>
+                        <td class="part-no">S231W240-211</td>
+                        <td class="part-no">32500-211</td>
+                        <td class="part-no">32500-711</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Electrical Panel (Bus Isln BTB 1 / BTB 2 slots)</td>
+                    </tr>
+                    <tr>
+                        <td>Drive</td>
+                        <td class="part-no">S231W240-216</td>
+                        <td class="part-no">32500-216</td>
+                        <td class="part-no">32500-716</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Electrical Panel (IDG 1 / IDG 2 Disconnect slots)</td>
+                    </tr>
+
+                    <!-- Window Heat -->
+                    <tr class="section-row"><td colspan="6">Window Heat</td></tr>
+                    <tr>
+                        <td>Pass Oxy - On</td>
+                        <td class="part-no">S231W240-215</td>
+                        <td class="part-no">32500-215</td>
+                        <td class="part-no">32500-715</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated slot</td>
+                    </tr>
+                    <tr>
+                        <td>Window Heat - On/Inop</td>
+                        <td class="part-no">S231W240-204</td>
+                        <td class="part-no">32500-204</td>
+                        <td class="part-no">32500-704</td>
+                        <td class="qty-cell">4</td>
+                        <td class="swap-info">Alternative at Window Heat Panel (Side vs Front Window slots)</td>
+                    </tr>
+
+                    <!-- Hydraulics -->
+                    <tr class="section-row"><td colspan="6">Hydraulics</td></tr>
+                    <tr>
+                        <td>RAT - Press/Unlkd</td>
+                        <td class="part-no">S231W240-214</td>
+                        <td class="part-no">32500-214</td>
+                        <td class="part-no">32500-714</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated slot</td>
+                    </tr>
+                    <tr>
+                        <td>Hyd. Pumps - On/Fault</td>
+                        <td class="part-no">S231W240-203</td>
+                        <td class="part-no">32500-203</td>
+                        <td class="part-no">32500-703</td>
+                        <td class="qty-cell">4</td>
+                        <td class="swap-info">Alternative at Air Conditioning Panel (Trim Air L&R slots)</td>
+                    </tr>
+
+                    <!-- Passenger Signs -->
+                    <tr class="section-row"><td colspan="6">Passenger Signs</td></tr>
+                    <tr>
+                        <td>Storm - On</td>
+                        <td class="part-no">S231W240-202</td>
+                        <td class="part-no">32500-202</td>
+                        <td class="part-no">32500-702</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Alternative at Aircraft Lights / Recirc Fans Panel</td>
+                    </tr>
+
+                    <!-- Cargo Fire/EEC and Autostart -->
+                    <tr class="section-row"><td colspan="6">Cargo Fire / EEC and Autostart</td></tr>
+                    <tr>
+                        <td>Cargo Fire FWD - Armed/Fwd</td>
+                        <td class="part-no">S231W240-218</td>
+                        <td class="part-no">32500-218</td>
+                        <td class="part-no">32500-718</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated critical fire slot</td>
+                    </tr>
+                    <tr>
+                        <td>Cargo Fire AFT - Armed/Aft</td>
+                        <td class="part-no">S231W240-219</td>
+                        <td class="part-no">32500-219</td>
+                        <td class="part-no">32500-719</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated critical fire slot</td>
+                    </tr>
+                    <tr>
+                        <td>Cargo Fire Disch - /Disch</td>
+                        <td class="part-no">S231W240-217</td>
+                        <td class="part-no">32500-217</td>
+                        <td class="part-no">32500-717</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated critical fire slot</td>
+                    </tr>
+                    <tr>
+                        <td>Engine EEC L&R - Norm/Altn</td>
+                        <td class="part-no">S231W240-209</td>
+                        <td class="part-no">32500-209</td>
+                        <td class="part-no">32500-709</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Engine EEC Panel (Opposite Engine EEC slot)</td>
+                    </tr>
+                    <tr>
+                        <td>Autostart - On/Off</td>
+                        <td class="part-no">S231W240-201</td>
+                        <td class="part-no">32500-201</td>
+                        <td class="part-no">32500-701</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Alternative at Electrical Panel (On/Off slots) or Anti-Ice Panel</td>
+                    </tr>
+
+                    <!-- Fuel/Fuel Jettison -->
+                    <tr class="section-row"><td colspan="6">Fuel / Fuel Jettison</td></tr>
+                    <tr>
+                        <td>Nozzle L&R - On/Valve</td>
+                        <td class="part-no">S231W240-206</td>
+                        <td class="part-no">32500-206</td>
+                        <td class="part-no">32500-706</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Fuel Jettison Panel (Opposite Nozzle slot)</td>
+                    </tr>
+                    <tr>
+                        <td>Fuel Pumps (6) - On/Press</td>
+                        <td class="part-no">S231W240-208</td>
+                        <td class="part-no">32500-208</td>
+                        <td class="part-no">32500-708</td>
+                        <td class="qty-cell">6</td>
+                        <td class="swap-info">Alternative at Fuel Panel (Other Fuel Pump slots)</td>
+                    </tr>
+                    <tr>
+                        <td>Fuel Crossfeed - Valve</td>
+                        <td class="part-no">S231W240-223</td>
+                        <td class="part-no">32500-223</td>
+                        <td class="part-no">32500-723</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Fuel Panel (Forward <-> Aft Crossfeed slots)</td>
+                    </tr>
+                    <tr>
+                        <td>Jettison Arm - Armed/Fault</td>
+                        <td class="part-no">S231W240-237</td>
+                        <td class="part-no">32500-237</td>
+                        <td class="part-no">32500-737</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated slot</td>
+                    </tr>
+
+                    <!-- Anti-Ice/Aircraft Lights -->
+                    <tr class="section-row"><td colspan="6">Anti-Ice / Aircraft Lights</td></tr>
+                    <tr>
+                        <td>Aircraft Lights - On</td>
+                        <td class="part-no">S231W240-202</td>
+                        <td class="part-no">32500-202</td>
+                        <td class="part-no">32500-702</td>
+                        <td class="qty-cell">4</td>
+                        <td class="swap-info">Alternative at Air Conditioning Panel (Recirc Fans / Gasper slots)</td>
+                    </tr>
+
+                    <!-- Air Conditioning -->
+                    <tr class="section-row"><td colspan="6">Air Conditioning</td></tr>
+                    <tr>
+                        <td>Packs L&R - Auto/Off</td>
+                        <td class="part-no">S231W240-212</td>
+                        <td class="part-no">32500-212</td>
+                        <td class="part-no">32500-712</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Bleed Air Panel (APU Bleed) or PFC Panel (TAC)</td>
+                    </tr>
+                    <tr>
+                        <td>Recirc Fans Upper&Lower - On/Off</td>
+                        <td class="part-no">S231W240-202</td>
+                        <td class="part-no">32500-202</td>
+                        <td class="part-no">32500-702</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Aircraft Lights Panel or Storm Light slot</td>
+                    </tr>
+                    <tr>
+                        <td>Trim Air L&R - On/Fault</td>
+                        <td class="part-no">S231W240-203</td>
+                        <td class="part-no">32500-203</td>
+                        <td class="part-no">32500-703</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Hydraulics Panel (Hydraulic Pumps slots)</td>
+                    </tr>
+                    <tr>
+                        <td>Equipment Cooling - Auto/Ovrd</td>
+                        <td class="part-no">S231W240-213</td>
+                        <td class="part-no">32500-213</td>
+                        <td class="part-no">32500-713</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Dedicated slot</td>
+                    </tr>
+                    <tr>
+                        <td>Gasper - ON</td>
+                        <td class="part-no">S231W240-202</td>
+                        <td class="part-no">32500-202</td>
+                        <td class="part-no">32500-702</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Alternative at Aircraft Lights / Recirc Fans slots</td>
+                    </tr>
+
+                    <!-- Bleed Air/Pressure -->
+                    <tr class="section-row"><td colspan="6">Bleed Air / Pressure</td></tr>
+                    <tr>
+                        <td>Bleed Air Isoln - Auto/Close</td>
+                        <td class="part-no">S231W240-235</td>
+                        <td class="part-no">32500-235</td>
+                        <td class="part-no">32500-735</td>
+                        <td class="qty-cell">3</td>
+                        <td class="swap-info">Alternative at Bleed Air Panel (Other Isolation valve slots)</td>
+                    </tr>
+                    <tr>
+                        <td>Anti-Ice - On/Off</td>
+                        <td class="part-no">S231W240-201</td>
+                        <td class="part-no">32500-201</td>
+                        <td class="part-no">32500-701</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Electrical Panel (On/Off slots) or Autostart Panel</td>
+                    </tr>
+                    <tr>
+                        <td>APU Bleed - Auto/Off</td>
+                        <td class="part-no">S231W240-212</td>
+                        <td class="part-no">32500-212</td>
+                        <td class="part-no">32500-712</td>
+                        <td class="qty-cell">1</td>
+                        <td class="swap-info">Alternative at Air Conditioning Panel (Packs L&R slots)</td>
+                    </tr>
+                    <tr>
+                        <td>Outflow Valve Fwd&Aft - Auto/Man</td>
+                        <td class="part-no">S231W240-236</td>
+                        <td class="part-no">32500-236</td>
+                        <td class="part-no">32500-736</td>
+                        <td class="qty-cell">2</td>
+                        <td class="swap-info">Alternative at Pressurization Panel (Forward <-> Aft Outflow slots)</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- PHOTO VIEWER MODAL CONTAINER -->
+    <div id="photo-viewer" class="photo-viewer-box">
+        <img id="photo-viewer-img" src="" alt="Switches Guide">
+        <button class="photo-close-btn" onclick="closeAllPopups()">✕ Exit Photo</button>
+    </div>
+
+    <!-- HOT-ZONE DATA POPUPS -->
+    <div id="popup-adiru" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>PFC / ADIRU Module Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>ADIRU - On/Off</td><td class="part-no">S231W240-230</td><td class="part-no">32500-230</td><td class="part-no">32500-730</td><td>1</td></tr>
+                <tr><td>Thrust Assym. Computer - Auto/Off</td><td class="part-no">S231W240-212</td><td class="part-no">32500-212</td><td class="part-no">32500-712</td><td>1</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-electrical" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Electrical System Module Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>On/Off</td><td class="part-no">S231W240-201</td><td class="part-no">32500-201</td><td class="part-no">32500-701</td><td>8</td></tr>
+                <tr><td>On/Available</td><td class="part-no">S231W240-205</td><td class="part-no">32500-205</td><td class="part-no">32500-705</td><td>2</td></tr>
+                <tr><td>Auto/Isln</td><td class="part-no">S231W240-211</td><td class="part-no">32500-211</td><td class="part-no">32500-711</td><td>2</td></tr>
+                <tr><td>Drive</td><td class="part-no">S231W240-216</td><td class="part-no">32500-216</td><td class="part-no">32500-716</td><td>2</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-wipers-lights" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Left Wipers & Camera Lights</h3>
+        <p style="font-size:0.85em; color:#bcaaa4; margin:10px 0 0 0;">No direct Korry modular digital switches mapped to this hardware frame quadrant on reference dataset sheet.</p>
+    </div>
+
+    <div id="popup-emer-lights" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Window Heat / Pass Oxy Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Pass Oxy - On</td><td class="part-no">S231W240-215</td><td class="part-no">32500-215</td><td class="part-no">32500-715</td><td>1</td></tr>
+                <tr><td>Window Heat - On/Inop</td><td class="part-no">S231W240-204</td><td class="part-no">32500-204</td><td class="part-no">32500-704</td><td>4</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-hyd-ram-air" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Hydraulic System Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>RAT - Press/Unlkd</td><td class="part-no">S231W240-214</td><td class="part-no">32500-214</td><td class="part-no">32500-714</td><td>1</td></tr>
+                <tr><td>Hyd. Pumps - On/Fault</td><td class="part-no">S231W240-203</td><td class="part-no">32500-203</td><td class="part-no">32500-703</td><td>4</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-pass-signs" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Passenger Signs / Storm Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Storm - On</td><td class="part-no">S231W240-202</td><td class="part-no">32500-202</td><td class="part-no">32500-702</td><td>1</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-engine-mcp" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Cargo Fire / EEC & Autostart</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Cargo Fire FWD - Armed/Fwd</td><td class="part-no">S231W240-218</td><td class="part-no">32500-218</td><td class="part-no">32500-718</td><td>1</td></tr>
+                <tr><td>Cargo Fire AFT - Armed/Aft</td><td class="part-no">S231W240-219</td><td class="part-no">32500-219</td><td class="part-no">32500-719</td><td>1</td></tr>
+                <tr><td>Cargo Fire Disch - /Disch</td><td class="part-no">S231W240-217</td><td class="part-no">32500-217</td><td class="part-no">32500-717</td><td>1</td></tr>
+                <tr><td>Engine EEC L&R - Norm/Altn</td><td class="part-no">S231W240-209</td><td class="part-no">32500-209</td><td class="part-no">32500-709</td><td>2</td></tr>
+                <tr><td>Autostart - On/Off</td><td class="part-no">S231W240-201</td><td class="part-no">32500-201</td><td class="part-no">32500-701</td><td>1</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-fuel-jettison" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Fuel & Jettison System Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Nozzle L&R - On/Valve</td><td class="part-no">S231W240-206</td><td class="part-no">32500-206</td><td class="part-no">32500-706</td><td>2</td></tr>
+                <tr><td>Fuel Pumps (6) - On/Press</td><td class="part-no">S231W240-208</td><td class="part-no">32500-208</td><td class="part-no">32500-708</td><td>6</td></tr>
+                <tr><td>Fuel Crossfeed - Valve</td><td class="part-no">S231W240-223</td><td class="part-no">32500-223</td><td class="part-no">32500-723</td><td>2</td></tr>
+                <tr><td>Jettison Arm - Armed/Fault</td><td class="part-no">S231W240-237</td><td class="part-no">32500-237</td><td class="part-no">32500-737</td><td>1</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-anti-ice" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Anti-Ice / Aircraft Lights Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Aircraft Lights - On</td><td class="part-no">S231W240-202</td><td class="part-no">32500-202</td><td class="part-no">32500-702</td><td>4</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-air-cond" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Air Conditioning Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Packs L&R - Auto/Off</td><td class="part-no">S231W240-212</td><td class="part-no">32500-212</td><td class="part-no">32500-712</td><td>2</td></tr>
+                <tr><td>Recirc Fans Upper&Lower - On/Off</td><td class="part-no">S231W240-202</td><td class="part-no">32500-202</td><td class="part-no">32500-702</td><td>2</td></tr>
+                <tr><td>Trim Air L&R - On/Fault</td><td class="part-no">S231W240-203</td><td class="part-no">32500-203</td><td class="part-no">32500-703</td><td>2</td></tr>
+                <tr><td>Equipment Cooling - Auto/Ovrd</td><td class="part-no">S231W240-213</td><td class="part-no">32500-213</td><td class="part-no">32500-713</td><td>1</td></tr>
+                <tr><td>Gasper - ON</td><td class="part-no">S231W240-202</td><td class="part-no">32500-202</td><td class="part-no">32500-702</td><td>1</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-bleed-press" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Bleed Air / Pressure Specifications</h3>
+        <table class="popup-table">
+            <thead>
+                <tr><th>Component Name</th><th>Boeing TL</th><th>Korry TL</th><th>Module Part</th><th>Qty</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Bleed Air Isoln - Auto/Close</td><td class="part-no">S231W240-235</td><td class="part-no">32500-235</td><td class="part-no">32500-735</td><td>3</td></tr>
+                <tr><td>Anti-Ice - On/Off</td><td class="part-no">S231W240-201</td><td class="part-no">32500-201</td><td class="part-no">32500-701</td><td>2</td></tr>
+                <tr><td>APU Bleed - Auto/Off</td><td class="part-no">S231W240-212</td><td class="part-no">32500-212</td><td class="part-no">32500-712</td><td>1</td></tr>
+                <tr><td>Outflow Valve Fwd&Aft - Auto/Man</td><td class="part-no">S231W240-236</td><td class="part-no">32500-236</td><td class="part-no">32500-736</td><td>2</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="popup-lighting-r" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Right Wipers & Master Brightness</h3>
+        <p style="font-size:0.85em; color:#bcaaa4; margin:10px 0 0 0;">No direct Korry modular digital switches mapped to this hardware frame quadrant on reference dataset sheet.</p>
+    </div>
+
+    <div id="dark-screen" class="overlay-screen" onclick="closeAllPopups()"></div>
+
+    <script>
+        function showPhoto(imgSrc) {
+            closeAllPopups();
+            var darkScreen = document.getElementById('dark-screen');
+            var photoBox = document.getElementById('photo-viewer');
+            var photoImg = document.getElementById('photo-viewer-img');
+
+            photoImg.src = imgSrc;
+            if (darkScreen) darkScreen.style.display = 'block';
+            if (photoBox) photoBox.style.display = 'block';
+        }
+
+        function showPopup(id) {
+            closeAllPopups();
+            var darkScreen = document.getElementById('dark-screen');
+            var targetPopup = document.getElementById('popup-' + id);
+
+            if (darkScreen) darkScreen.style.display = 'block';
+            if (targetPopup) targetPopup.style.display = 'block';
+        }
+        
+        function closeAllPopups() {
+            var darkScreen = document.getElementById('dark-screen');
+            if (darkScreen) darkScreen.style.display = 'none';
+            
+            var photoBox = document.getElementById('photo-viewer');
+            if (photoBox) photoBox.style.display = 'none';
+
+            const boxes = document.querySelectorAll('.popup-box');
+            boxes.forEach(box => box.style.display = 'none');
+        }
+
+        function filterTable() {
+            var input = document.getElementById("searchSwitches");
+            var filter = input.value.toUpperCase();
+            var table = document.getElementById("SwitchesTable");
+            var tr = table.getElementsByTagName("tr");
+
+            for (var i = 0; i < tr.length; i++) {
+                if (tr[i].classList.contains('section-row')) continue;
+                
+                var tdArr = tr[i].getElementsByTagName("td");
+                var match = false;
+                
+                for (var j = 0; j < tdArr.length; j++) {
+                    if (tdArr[j]) {
+                        var txtValue = tdArr[j].textContent || tdArr[j].innerText;
+                        if (txtValue.toUpperCase().indexOf(filter) > -1) {
+                            match = true;
+                            break;
+                        }
+                    }
+                }
+                tr[i].style.display = match ? "" : "none";
+            }
+        }
+    </script>
+</body>
+</html>
