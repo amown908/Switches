@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>First Officer Lateral Console</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: #1a1412; color: #e2e8f0;
+            margin: 0; padding: 20px;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .back-link {
+            align-self: flex-start; color: #f59e0b;
+            text-decoration: none; font-weight: bold; margin-bottom: 20px;
+        }
+        .back-link:hover { text-decoration: underline; }
+        h1 { color: #ffffff; margin-bottom: 5px; }
+        .subtitle { color: #bcaaa4; margin-bottom: 25px; }
+
+        /* Content-driven width to support clean page zooming */
+        .image-container {
+            position: relative;
+            display: inline-block;
+            max-width: 100%;
+            width: 750px; /* Set baseline width for desktop viewports */
+            border: 4px solid #3e2723;
+            border-radius: 8px;
+            box-shadow: 0 10px 30px -5px rgba(0,0,0,0.9);
+            overflow: hidden;
+            margin-bottom: 35px;
+        }
+        img { 
+            width: 100%; 
+            height: auto; 
+            display: block; 
+        }
+
+        /* Boeing styling for clickable panel zones */
+        .panel-zone {
+            position: absolute;
+            background: rgba(141, 110, 99, 0.08);
+            border: 1.5px solid rgba(215, 204, 200, 0.35);
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 4px;
+            overflow: hidden;
+        }
+        .panel-zone:hover {
+            background: rgba(245, 158, 11, 0.2);
+            border-color: #f59e0b;
+        }
+        .panel-zone .zone-label {
+            color: rgba(255,255,255,0.9);
+            font-size: 0.55em;
+            font-weight: 600;
+            line-height: 1.2;
+            pointer-events: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            letter-spacing: 0.02em;
+        }
+        .panel-zone .zone-fin {
+            color: #f59e0b;
+            font-size: 0.5em;
+            font-family: monospace;
+            pointer-events: none;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.9);
+            margin-top: 2px;
+        }
+
+        /* --- Clickable Overlay Mapping Zones --- */
+        #zone-mic-map        { top: 7%; left: 1.5%; width: 23%; height: 12%; }
+        #zone-efis-heaters   { top: 25%; left: 0%; width: 10%; height: 18%; }
+        #zone-heaters-panel  { top: 25%; left: 9.5%; width: 11%; height: 13%; }
+        #zone-brightness     { top: 35%; left: 11%; width: 17%; height: 12%; }
+        #zone-clipboard      { top: 34%; left: 33.5%; width: 33.5%; height: 53%; }
+        #zone-tiller         { top: 50%; left: 68%; width: 16%; height: 37%; }
+        #zone-chart-worktable{ top: 54%; left: 88%; width: 11%; height: 21%; }
+
+        /* Popups styling */
+        .overlay-screen {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 99;
+        }
+        .popup-box {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            background: #2b1f1c;
+            border: 2px solid #f59e0b;
+            padding: 22px 25px;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.9);
+            z-index: 100;
+            width: 92%; max-width: 440px;
+        }
+        .popup-box h3 { margin: 0 0 12px 0; color: #ffffff; font-size: 1.1em; padding-right: 30px; }
+        .popup-row { display: flex; gap: 8px; margin-bottom: 6px; font-size: 0.85em; }
+        .popup-row .label { color: #bcaaa4; min-width: 40px; }
+        .popup-row .value { font-family: monospace; color: #f59e0b; }
+        .popup-row .value.sn { color: #a3e635; }
+        .popup-divider { border: none; border-top: 1px solid #4e342e; margin: 12px 0; }
+        .popup-contents { font-size: 0.85em; color: #d7ccc8; line-height: 1.6; }
+        .popup-contents strong { color: #ffffff; }
+        
+        .close-btn {
+            position: absolute; top: 12px; right: 12px;
+            background: #4e342e; color: white; border: none;
+            padding: 4px 9px; cursor: pointer; border-radius: 4px; font-size: 0.85em;
+        }
+        .close-btn:hover { background: #d97706; color: #1a1412; }
+
+        /* Index Table Styling */
+        .parts-section { width: 100%; max-width: 900px; margin-top: 20px; }
+        .parts-section h2 { color: #ffffff; border-bottom: 2px solid #4e342e; padding-bottom: 10px; }
+        .search-box {
+            width: 100%; padding: 10px; margin-bottom: 15px;
+            background: #2b1f1c; border: 1px solid #4e342e;
+            border-radius: 6px; color: #f3f4f6; font-size: 0.9em;
+        }
+        .search-box:focus { outline: none; border-color: #f59e0b; }
+        table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        thead tr { background: #1a1412; color: #f59e0b; text-align: left; }
+        th { padding: 12px 15px; border-bottom: 2px solid #f59e0b; }
+        td { padding: 10px 15px; border-bottom: 1px solid #4e342e; }
+        tbody tr:nth-child(even) { background: #221816; }
+        tbody tr:hover { background: #3e2723; }
+        .pn { font-family: monospace; color: #f59e0b; }
+        .sn { font-family: monospace; color: #a3e635; }
+    </style>
+</head>
+<body>
+
+    <a href="index.html" class="back-link">← Back to Full Cockpit</a>
+    <h1>First Officer Lateral Console</h1>
+    <a href="gswitches.html">➔ Switches Page </a>
+    <p class="subtitle">Click any dynamic workspace zone to view the component details and P/N listings.</p>
+
+    <div class="image-container">
+        <img src="FOLateral.jpeg" alt="First Officer Lateral Console">
+
+        <div class="panel-zone" id="zone-mic-map" onclick="showPopup('mic-map')">
+            <div class="zone-label">MIC / MAP / CLOCK CONTROL</div>
+            <div class="zone-fin">P/N</div>
+        </div>
+        <div class="panel-zone" id="zone-efis-heaters" onclick="showPopup('efis-heaters')">
+            <div class="zone-label">DSPL CTRL / AIR DATA ATT</div>
+            <div class="zone-fin">P/N</div>
+        </div>
+        <div class="panel-zone" id="zone-heaters-panel" onclick="showPopup('heaters')">
+            <div class="zone-label">FOOT / SHOULDER HEATERS</div>
+            <div class="zone-fin">MA264951.32.2.825</div>
+        </div>
+        <div class="panel-zone" id="zone-brightness" onclick="showPopup('brightness')">
+            <div class="zone-label">FWD PANEL BRIGHTNESS</div>
+            <div class="zone-fin">MA264951.32.2.825</div>
+        </div>
+        <div class="panel-zone" id="zone-clipboard" onclick="showPopup('clipboard')">
+            <div class="zone-label">DOCUMENT CLIPBOARD / PIVOT MOUNT</div>
+            <div class="zone-fin">8720B2-1</div>
+        </div>
+        <div class="panel-zone" id="zone-tiller" onclick="showPopup('tiller')">
+            <div class="zone-label">SIDE CONSOLE STEERING TILLER</div>
+            <div class="zone-fin">P/N</div>
+        </div>
+        <div class="panel-zone" id="zone-chart-worktable" onclick="showPopup('chart-worktable')">
+            <div class="zone-label">CHART / WORKTABLE LIGHTS</div>
+            <div class="zone-fin">—</div>
+        </div>
+    </div>
+
+    <div id="dark-screen" class="overlay-screen" onclick="closeAllPopups()"></div>
+
+    <div id="popup-mic-map" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Microphone, Map &amp; Clock Switch Panel</h3>
+        <div class="popup-row"><span class="label">P/N</span><span class="value">[Enter P/N Later]</span></div>
+        <hr class="popup-divider">
+        <div class="popup-contents">Located on the outboard window sill frame. Contains toggle inputs for oxygen mask/boom microphone selections, map light activation, and digital cockpit clock synchronization loops.</div>
+    </div>
+
+    <div id="popup-efis-heaters" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Display Control / Air Data Att Panel</h3>
+        <div class="popup-row"><span class="label">P/N</span><span class="value">[Enter P/N Later]</span></div>
+        <hr class="popup-divider">
+        <div class="popup-contents">Vertical sub-panel interfacing with the primary instrument bus. Features display control source selections (DSPL CTRL) and auxiliary air data attitude safety routing switches.</div>
+    </div>
+
+    <div id="popup-heaters" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Side Console Comfort Heaters</h3>
+        <div class="popup-row"><span class="label">P/N</span><span class="value">MA264951.32.2.825</span></div>
+        <hr class="popup-divider">
+        <div class="popup-contents">Houses dedicated target temperature control dials regulating local electrical heating coils for <strong>Foot Warmers</strong> and <strong>Shoulder-level</strong> airflow distribution channels. Ref: A300.</div>
+    </div>
+
+    <div id="popup-brightness" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Forward Panel Brightness Control</h3>
+        <div class="popup-row"><span class="label">P/N</span><span class="value">MA264951.32.2.825</span></div>
+        <hr class="popup-divider">
+        <div class="popup-contents">Integrates continuous rotary dimming potentiometers managing illumination bounds for the <strong>Inboard Display (INBD DSPL)</strong>, Floodlights (FN/FLOOD), and associated background text layers. Ref: A300.</div>
+    </div>
+
+    <div id="popup-clipboard" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Flight Documentation Clipboard &amp; Mount</h3>
+        <div class="popup-row"><span class="label">P/N</span><span class="value">8720B2-1</span></div>
+        <hr class="popup-divider">
+        <div class="popup-contents">Central workspace structure complete with a spring-loaded retention clip for paper charts, integrated <strong>PIVOT mounting plate</strong> for Electronic Flight Bag (EFB) tablets, and an integrated storage container base. Ref: A313 (F/O EFB DISPLAY).</div>
+    </div>
+
+    <div id="popup-tiller" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Nose Wheel Steering Tiller handle</h3>
+        <div class="popup-row"><span class="label">P/N</span><span class="value">[Enter P/N Later]</span></div>
+        <hr class="popup-divider">
+        <div class="popup-contents">Ergonomic mechanical hand grip control module. Directly commands low-speed nose landing gear turning angles up to <strong>70°</strong> during ground taxi, positioning, and gate maneuvering maneuvers.</div>
+    </div>
+
+    <div id="popup-chart-worktable" class="popup-box">
+        <button class="close-btn" onclick="closeAllPopups()">✕</button>
+        <h3>Chart &amp; Worktable Utility Switches</h3>
+        <hr class="popup-divider">
+        <div class="popup-contents">Auxiliary instrument surface controls regulating light intensity loops targeted specifically over the sliding First Officer chart table assemblies.</div>
+    </div>
+
+    <div class="parts-section">
+        <h2>F/O Lateral Console Parts Index</h2>
+        <input class="search-box" type="text" id="searchLateral" onkeyup="filterTable('searchLateral','lateralTable')" placeholder="Search description or part numbers...">
+        <table id="lateralTable">
+            <thead>
+                <tr><th>Description</th><th>Part Number</th><th>Serial Number</th></tr>
+            </thead>
+            <tbody>
+                <tr><td>Microphone, Map &amp; Clock Switch Assembly</td><td class="pn">[-]</td><td class="sn">-</td></tr>
+                <tr><td>Display Control / Air Data Source Select Module</td><td class="pn">[-]</td><td class="sn">-</td></tr>
+                <tr><td>Side Console Foot &amp; Shoulder Heater Module (A300)</td><td class="pn">MA264951.32.2.825</td><td class="sn">-</td></tr>
+                <tr><td>Forward Panel Brightness Dimmer Board (A300)</td><td class="pn">MA264951.32.2.825</td><td class="sn">-</td></tr>
+                <tr><td>Flight Deck Documentation Clipboard Base</td><td class="pn">[-]</td><td class="sn">-</td></tr>
+                <tr><td>EFB Pivot Adapter Interface Plate (A313)</td><td class="pn">8720B2-1</td><td class="sn">-</td></tr>
+                <tr><td>First Officer Nose Wheel Steering Tiller Control</td><td class="pn">[-]</td><td class="sn">-</td></tr>
+                <tr><td>Chart &amp; Worktable Utility Illumination Control</td><td class="pn">-</td><td class="sn">-</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function showPopup(id) {
+            closeAllPopups();
+            document.getElementById('dark-screen').style.display = 'block';
+            document.getElementById('popup-' + id).style.display = 'block';
+        }
+        function closeAllPopups() {
+            document.getElementById('dark-screen').style.display = 'none';
+            document.querySelectorAll('.popup-box').forEach(p => p.style.display = 'none');
+        }
+        function filterTable(inputId, tableId) {
+            const input = document.getElementById(inputId).value.toLowerCase();
+            document.querySelectorAll('#' + tableId + ' tbody tr').forEach(row => {
+                row.style.display = row.textContent.toLowerCase().includes(input) ? '' : 'none';
+            });
+        }
+    </script>
+
+</body>
+</html>
