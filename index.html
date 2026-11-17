@@ -57,161 +57,29 @@
         }
         .panel-box:hover::after { opacity: 1; }
 
-        /* POP-UP MODAL OVERLAY */
-        .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.75);
-            display: flex; justify-content: center; align-items: center;
-            opacity: 0; pointer-events: none;
-            transition: opacity 0.2s ease-in-out;
-            z-index: 1000;
-        }
-        .modal-overlay.active { opacity: 1; pointer-events: auto; }
-
-        .modal-box {
-            background: #2b1f1c;
-            border: 2px solid #5d4037;
-            border-radius: 8px;
-            padding: 24px;
-            max-width: 450px; width: 90%;
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.7);
-            text-align: center;
-            transform: scale(0.9);
-            transition: transform 0.2s ease-in-out;
-        }
-        .modal-overlay.active .modal-box { transform: scale(1); }
-
-        .modal-box h3 { margin-top: 0; color: #ffffff; font-size: 1.3rem; }
-        .modal-box p { color: #d7ccc8; font-size: 0.95rem; line-height: 1.5; margin-bottom: 20px; }
-
-        /* Serial/Part Number Data Wrapper styling */
-        .serial-info {
-            background: rgba(0, 0, 0, 0.25);
-            border: 1px dashed #5d4037;
-            border-radius: 6px;
-            padding: 12px;
-            margin-bottom: 20px;
-            text-align: left;
-        }
-        .serial-info div {
-            margin-bottom: 6px;
-            font-size: 0.95rem;
-        }
-        .serial-info div:last-child { margin-bottom: 0; }
-        .serial-info strong { color: #f59e0b; }
-
-        /* Action Buttons */
-        .modal-buttons { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
-        .btn {
-            padding: 10px 16px; border-radius: 4px; border: none;
-            font-weight: 600; cursor: pointer; text-decoration: none; font-size: 0.9rem;
-            transition: background 0.15s;
-        }
-        .btn-secondary { background: #4e342e; color: #e2e8f0; }
-        .btn-secondary:hover { background: #5d4037; }
-
         /* Mapped Coordinates */
         #overhead         { top: 0%;    left: 0%;    width: 100%; height: 32%; }
         #compass          { top: 32%;   left: 46%;   width: 8%;   height: 4%;  }
-        #glareshield      { top: 42%;   left: 15%;   width: 70%;  height: 23.5%;  }
+        #glareshield      { top: 42%;   left: 15%;   width: 70%;  height: 23.5%; }
         #pedestal         { top: 58%;   left: 29%;   width: 42%;  height: 42%; }
-        #yoke-left        { top: 53%;   left: 8%;    width: 21%;  height: 15%; }
-        #yoke-right       { top: 53%;   left: 71%;   width: 21%;  height: 15%; }
         #lateral-capt     { top: 48%;   left: 0%;    width: 20%;  height: 25%; }
         #lateral-fo       { top: 48%;   left: 80%;   width: 20%;  height: 25%; }
-        #seat-capt        { top: 74%;   left: 0%;    width: 24%;  height: 26%; }
-        #seat-fo          { top: 74%;   left: 76%;   width: 24%;  height: 26%; }
     </style>
 </head>
 <body>
 
     <h1>Boeing 777 Flight Deck Guide</h1>
-    <p class="subtitle">Hover over a layout section to preview. Click panels to visit pages, or click yokes &amp; seats for details.</p>
+    <p class="subtitle">Hover over a layout section to preview. Click a panel to view its switches.</p>
 
     <div class="cockpit-container">
         <img src="b777_cockpit.jpeg" alt="Boeing 777 Flight Deck System Breakdown">
 
-        <a href="oswitchsss.html"     class="panel-box" id="overhead"      title="Overhead Panel System" data-summary="Manages primary electrical, hydraulic, fuel, and air conditioning aircraft sub-systems."></a>
-        <a href="compass.html"      class="panel-box" id="compass"       title="Standby Compass &amp; Eye Ref" data-summary="Provides mechanical, magnetic direction backup independent of main systems."></a>
-        <a href="gswitchesss.html"  class="panel-box" id="glareshield"   title="Glareshield &amp; Main Panel" data-summary="Houses Autoflight system control panel (Mode Control Panel), EFIS display settings and Primary Flight Displays and Engine Indication/Crew Alerting System screens."></a>
-        <a href="pswitchesss.html"     class="panel-box" id="pedestal"      title="Pedestal" data-summary="Contains thrust levers, flap selectors, radio panels, and Control Display Units."></a>
-        <a href="gswitches.html" class="panel-box" id="lateral-capt"  title="Lateral Console — Capt" data-summary="Houses side window controls, oxygen mask stowage, and audio select panels."></a>
-        <a href="gswitches.html"   class="panel-box" id="lateral-fo"    title="Lateral Console - FO" data-summary="First Officer side instrumentation, window operation, and oxygen interface."></a>
-        
-        <div class="panel-box seat-trigger" id="seat-capt"   title="Capt Seat" data-summary="Fully adjustable primary crew seat with restraint tracking assemblies."></div>
-        <div class="panel-box seat-trigger" id="seat-fo"     title="FO Seat" data-summary="Fully adjustable primary co-pilot crew accommodation seat."></div>
-
-        <div class="panel-box yoke-trigger" id="yoke-left"     title="Capt Control Column (Yoke)" data-summary="Captain's primary pitch and roll mechanical control interface."></div>
-        <div class="panel-box yoke-trigger" id="yoke-right"    title="FO Control Column (Yoke)" data-summary="First Officer's primary pitch and roll mechanical control interface."></div>
+        <a href="oswitchsss.html"   class="panel-box" id="overhead"     title="Overhead Panel System"></a>
+        <a href="gswitchesss.html"  class="panel-box" id="glareshield"  title="Glareshield &amp; Main Panel"></a>
+        <a href="pswitchesss.html"  class="panel-box" id="pedestal"     title="Pedestal"></a>
+        <a href="gswitches.html"    class="panel-box" id="lateral-capt" title="Lateral Console — Capt"></a>
+        <a href="gswitches.html"    class="panel-box" id="lateral-fo"   title="Lateral Console - FO"></a>
     </div>
 
-    <div class="modal-overlay" id="infoModal">
-        <div class="modal-box">
-            <h3 id="modalTitle">Panel Name</h3>
-            <p id="modalDescription">Quick description overview goes here.</p>
-            
-            <div class="serial-info" id="modalSerialBox" style="display: none;">
-                <div><strong>P/N:</strong> <span id="pnValue">---</span></div>
-                <div><strong>S/N:</strong> <span id="snValue">---</span></div>
-            </div>
-
-            <div class="modal-buttons">
-                <button class="btn btn-secondary" onclick="closeModal()">✕ Close</button>
-            </div>
-        </div>
-    </div>
-
-    <script>
-        const modal = document.getElementById('infoModal');
-        const modalTitle = document.getElementById('modalTitle');
-        const modalDescription = document.getElementById('modalDescription');
-        const modalSerialBox = document.getElementById('modalSerialBox');
-        
-        const yokeTriggers = document.querySelectorAll('.yoke-trigger');
-        const seatTriggers = document.querySelectorAll('.seat-trigger');
-
-        // Yoke interaction setup
-        yokeTriggers.forEach(yoke => {
-            yoke.addEventListener('click', function() {
-                modalTitle.textContent = this.getAttribute('title');
-                modalDescription.textContent = this.getAttribute('data-summary') || "No layout description provided.";
-                
-                modalSerialBox.style.display = 'none'; // Keep P/N & S/N hidden for yokes
-                modal.classList.add('active');
-            });
-        });
-
-        // Seat interaction setup (METHOD 2: Directly set P/N and S/N based on seat ID)
-        seatTriggers.forEach(seat => {
-            seat.addEventListener('click', function() {
-                modalTitle.textContent = this.getAttribute('title');
-                modalDescription.textContent = this.getAttribute('data-summary') || "No layout description provided.";
-                
-                // Set specific P/N and S/N values depending on which seat was clicked
-                if (this.id === 'seat-capt') {
-                    document.getElementById('pnValue').textContent = "3A258-0041-01-1"; // Replace with your Capt seat P/N
-                    document.getElementById('snValue').textContent = "48512";     // Replace with your Capt seat S/N
-                } else if (this.id === 'seat-fo') {
-                    document.getElementById('pnValue').textContent = "3A258-0042-01-1Z"; // Replace with your FO seat P/N
-                    document.getElementById('snValue').textContent = "46185";       // Replace with your FO seat S/N
-                }
-
-                modalSerialBox.style.display = 'block'; // Make P/N & S/N block visible
-                modal.classList.add('active');
-            });
-        });
-
-        function closeModal() {
-            modal.classList.remove('active');
-        }
-
-        // Close when clicking layout layer background
-        modal.addEventListener('click', function(e) {
-            if(e.target === modal) {
-                closeModal();
-            }
-        });
-    </script>
 </body>
 </html>
